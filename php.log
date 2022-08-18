@@ -1,0 +1,252 @@
+[17-Aug-2022 18:38:18 Asia/Tokyo] $_SESSIONの値1：Array
+(
+)
+
+[17-Aug-2022 18:38:18 Asia/Tokyo] $_POSTの値1：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 18:38:18 Asia/Tokyo] POSTされた！
+[17-Aug-2022 18:38:18 Asia/Tokyo] $startFlg:1
+[17-Aug-2022 18:38:18 Asia/Tokyo] $gameFlg:
+[17-Aug-2022 18:38:18 Asia/Tokyo] else else else
+[17-Aug-2022 18:38:18 Asia/Tokyo] $_SESSIONの値2：Array
+(
+)
+
+[17-Aug-2022 18:38:18 Asia/Tokyo] $_POSTの値2：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 18:38:18 Asia/Tokyo] $_POSTの値3：Array
+(
+)
+
+[17-Aug-2022 18:38:18 Asia/Tokyo] ゲームスタート前
+[17-Aug-2022 18:39:08 Asia/Tokyo] $_SESSIONの値1：Array
+(
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] $_POSTの値1：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] POSTされた！
+[17-Aug-2022 18:39:08 Asia/Tokyo] $startFlg:1
+[17-Aug-2022 18:39:08 Asia/Tokyo] $gameFlg:
+[17-Aug-2022 18:39:08 Asia/Tokyo] first step
+[17-Aug-2022 18:39:08 Asia/Tokyo] 味方カード：Array
+(
+    [0] => Array
+        (
+            [up] => 1
+            [middle] => 美
+            [down] => 三
+            [place] => 0
+        )
+
+    [1] => Array
+        (
+            [up] => 3
+            [middle] => 美
+            [down] => 九
+            [place] => 1
+        )
+
+    [2] => Array
+        (
+            [up] => 9
+            [middle] => 楽
+            [down] => 六
+            [place] => 2
+        )
+
+    [3] => Array
+        (
+            [up] => 1
+            [middle] => 怒
+            [down] => 八
+            [place] => 3
+        )
+
+    [4] => Array
+        (
+            [up] => 2
+            [middle] => 賢
+            [down] => 二
+            [place] => 4
+        )
+
+    [5] => Array
+        (
+            [up] => 9
+            [middle] => 怒
+            [down] => 一
+            [place] => 5
+        )
+
+    [6] => Array
+        (
+            [up] => 4
+            [middle] => 怒
+            [down] => 一
+            [place] => 6
+        )
+
+    [7] => Array
+        (
+            [up] => 9
+            [middle] => 喜
+            [down] => 五
+            [place] => 7
+        )
+
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] $_SESSIONの値2：Array
+(
+    [game-now] => fight!!
+    [human] => Index\NormalHuman Object
+        (
+            [name:protected] => きれい子
+            [img:protected] => img/otaku_girl_fashion.png
+            [attribute:protected] => 6
+            [exp:protected] => 0
+            [point:protected] => 
+        )
+
+    [process] => ゲームをはじめます。じぶんの好きなカードをえらんでください。
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] $_POSTの値2：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] $_POSTの値3：Array
+(
+)
+
+[17-Aug-2022 18:39:08 Asia/Tokyo] PHP Notice:  Undefined variable: tekiCard in /Applications/MAMP/htdocs/Output/3.cardgame/index.php on line 511
+[17-Aug-2022 18:39:08 Asia/Tokyo] PHP Warning:  Invalid argument supplied for foreach() in /Applications/MAMP/htdocs/Output/3.cardgame/index.php on line 511
+[17-Aug-2022 19:05:45 Asia/Tokyo] $_SESSIONの値1：Array
+(
+    [game-now] => fight!!
+    [human] => Index\NormalHuman Object
+        (
+            [name:protected] => きれい子
+            [img:protected] => img/otaku_girl_fashion.png
+            [attribute:protected] => 6
+            [exp:protected] => 0
+            [point:protected] => 
+        )
+
+    [process] => ゲームをはじめます。じぶんの好きなカードをえらんでください。
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] $_POSTの値1：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] POSTされた！
+[17-Aug-2022 19:05:45 Asia/Tokyo] $startFlg:1
+[17-Aug-2022 19:05:45 Asia/Tokyo] $gameFlg:1
+[17-Aug-2022 19:05:45 Asia/Tokyo] first step
+[17-Aug-2022 19:05:45 Asia/Tokyo] 味方カード：Array
+(
+    [0] => Array
+        (
+            [up] => 9
+            [middle] => 楽
+            [down] => 二
+            [place] => 0
+        )
+
+    [1] => Array
+        (
+            [up] => 5
+            [middle] => 8
+            [down] => 七
+            [place] => 1
+        )
+
+    [2] => Array
+        (
+            [up] => 6
+            [middle] => 楽
+            [down] => 七
+            [place] => 2
+        )
+
+    [3] => Array
+        (
+            [up] => 3
+            [middle] => 楽
+            [down] => 一
+            [place] => 3
+        )
+
+    [4] => Array
+        (
+            [up] => 8
+            [middle] => 変
+            [down] => 一
+            [place] => 4
+        )
+
+    [5] => Array
+        (
+            [up] => 8
+            [middle] => 賢
+            [down] => 五
+            [place] => 5
+        )
+
+    [6] => Array
+        (
+            [up] => 1
+            [middle] => 楽
+            [down] => 二
+            [place] => 6
+        )
+
+    [7] => Array
+        (
+            [up] => 5
+            [middle] => 変
+            [down] => 一
+            [place] => 7
+        )
+
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] $_SESSIONの値2：Array
+(
+    [game-now] => fight!!
+    [human] => Index\NormalHuman Object
+        (
+            [name:protected] => きれい子
+            [img:protected] => img/otaku_girl_fashion.png
+            [attribute:protected] => 6
+            [exp:protected] => 0
+            [point:protected] => 
+        )
+
+    [process] => ゲームをはじめます。じぶんの好きなカードをえらんでください。
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] $_POSTの値2：Array
+(
+    [game-start] => GAME START!!
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] $_POSTの値3：Array
+(
+)
+
+[17-Aug-2022 19:05:45 Asia/Tokyo] PHP Notice:  Undefined variable: tekiCard in /Applications/MAMP/htdocs/Output/3.cardgame/index.php on line 511
+[17-Aug-2022 19:05:45 Asia/Tokyo] PHP Warning:  Invalid argument supplied for foreach() in /Applications/MAMP/htdocs/Output/3.cardgame/index.php on line 511
