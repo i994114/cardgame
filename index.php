@@ -30,7 +30,7 @@ class Attribute {
 //敵および味方のカード総数
 class CardNum {
     const TEKI_CARD_SUM = 1;
-    const MIKATA_CARD_SUM = 8;
+    const MIKATA_CARD_SUM = 8;  //変更の際はjqueryも変更すること！
 }
 
 //抽象クラス(生き物クラス)
@@ -547,20 +547,29 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         <!-- script -->
         <script src="js/vendor/jquery-2.2.2.min.js"></script>
         <script>
-            var $ul,
-
+            var $ul0,
+                $ul1,
+                $ul2,
+                $ul3,
+                $ul4,
+                $ul5,
+                $ul6,
+                $ul7,
+                $ul8;
             var val;
+
             $(function() {
-                $ul = $('.mikata-ul');
-                $ul.on('click', function(){
-                    val = $ul.find('li').text();
+                $ul0 = $('.mikata-ul0');
+                
+                $ul0.on('click', function(){
+                    val0 = $ul0.find('li').text();
                     //val = $ul1.data('num');
-                    console.log(val);
+                    console.log(val0);
                     var $this = $(this);
                     $.ajax({
                         type: "POST",
-                        url: "index.php",
-                        data: {"attack" : val}
+                        url: "ajaxCard.php",
+                        data: {"attack0" : val0}
                     }).done(function(data) {
                         console.log('success');
                     }).fail(function(msg) {
@@ -569,6 +578,129 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                 });
             });
 
+            $(function() {
+                $ul1 = $('.mikata-ul1');
+
+                $ul1.on('click', function() {
+                    val1 = $ul1.find('li').text();
+                    console.log(val1);
+                    var $this = $(this);
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: {"attack1" : val1}
+                    }).done(function(data) {
+                        console.log('success');
+                    }).fail(function(msg) {
+                        console.log('not!!!!!');
+                    });
+                });
+            });
+
+            $(function() {
+                $ul2 = $('.mikata-ul2');
+
+                $ul2.on('click', function() {
+                    val2 = $ul2.find('li').text();
+                    console.log(val2);
+                    var $this = $(this);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: {"attack2" : val2}
+                    }).done(function(data) {
+                        console.log('sucess');
+                    }).fail(function(msg) {
+                        console.log('not!!!!');
+                    });
+                });
+            });
+
+            $(function() {
+                $ul3 = $('.mikata-ul3');
+                
+                $ul3.on('click', function() {
+                    val3 = $ul3.find('li').text();
+                    console.log(val3);
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: { "attack3" : val3}
+                    }).done(function(data) {
+                        console.log('not!!!!');
+                    })
+                });
+            });
+
+            $(function(){
+                $ul4 = $('.mikata-ul4');
+                
+                $ul4.on('click', function(){
+                    val4 = $ul4.find('li').text();
+                    console.log(val4);
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: { "attack4" : val4}
+                    }).done(function(data) {
+                        console.log('success');
+                    }).fail(function(msg){
+                        console.log('not!!!');
+                    });
+                });
+            });
+
+            $(function(){
+                $ul5 = $('.mikata-ul5');
+
+                $ul5.on('click', function(){
+                    val5 = $ul5.find('li').text();
+                    console.log(val5);
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: { "attack5" : val5}
+                    }).done(function(data){
+                        console.log('success');
+                    }).fail(function(msg){
+                        console.log('not!!!!');
+                    });
+                });
+            });
+
+            $(function(){
+                $ul6 = $('.mikata-ul6');
+                $ul6.on('click', function(){
+                    val6 = $ul6.find('li').text();
+                    console.log(val6);
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: { "attack6" : val6}
+                    }).done(function(data){
+                        console.log('success');
+                    }).fail(function(msg){
+                        console.log('not!!!!');
+                    });
+                });
+            });
+
+            $(function(){
+                $ul7 = $('.mikata-ul7');
+                $ul7.on('click', function(){
+                    ul7 = $ul7.find('li').text();
+                    $.ajax({
+                        type: "POST",
+                        url: "index.php",
+                        data: { "attack7" : ul7}
+                    }).done(function(data){
+                        console.log('success');
+                    }).fail(function(msg){
+                        console.log('not!!!!');
+                    });
+                });
+            });
         </script>
     <?php
     }
