@@ -201,13 +201,14 @@ interface CardInterface {
     public static function setAttribute();
     public static function setDownNum();
     public static function ArrangeCard($kinds);
+    public static function judgeCard($teki, $mikata);
 }
 
 class CalcCardNum implements CardInterface {
 
     
 
-    //カード内上の値
+    //カード内上の値の算出
     public static function setUpNum()
     {
         return(mt_rand(1,9));
@@ -245,7 +246,7 @@ class CalcCardNum implements CardInterface {
         }
         return $temp;
     }
-    //カード下の数字を漢字に
+    //カード下の数字を漢字に変換
     public static function setDownNum()
     {
         $temp = mt_rand(1,9);
@@ -290,11 +291,31 @@ class CalcCardNum implements CardInterface {
             $temp[$i]['up'] = CalcCardNum::setUpNum();
             $temp[$i]['middle'] = CalcCardNum::setAttribute();
             $temp[$i]['down'] = CalcCardNum::setDownNum();
-            $temp[$i]['place'] = $i;
         }
         return $temp;
     }
+    //ひとつひとつの勝負の勝敗をつける
+    public static function judgeCard($teki, $mikata){
+        //どのカードが選択されたかを判定
+        for ($i=0; $i<CardNum::MIKATA_CARD_SUM; $i++){
+            if(!empty($_POST['attack'.$i])){
+                $temp = $i;
 
+                //値がみつかったのでループ終了
+                $i = CardNum::MIKATA_CARD_SUM;
+            }
+        }
+
+        error_log('対戦中　$敵カード' . print_r($teki, true));
+        error_log('対戦中　$味方カード' . print_r($mikata[$temp], true));
+
+        if($teki[0]['up'] < $mikata[$temp]['up']) {
+            error_log('win!!');
+        } else {
+            error_log('lose!!');
+        }
+
+    }
 }
 
 //----------
@@ -319,50 +340,62 @@ if(!empty($_POST)) {
 
     error_log('POSTされた！');
 
+    //ゲーム開始したか
     $startFlg = (!empty($_POST['game-start']))? true : false;
+    //ゲーム開始後、じぶんのカードを選んだか
     $gameFlg = (!empty($_SESSION['game-now']))? true : false;
+    //戦い中
+    if( !empty($_POST['attack0']) ||
+        !empty($_POST['attack1']) ||
+        !empty($_POST['attack2']) ||
+        !empty($_POST['attack3']) ||
+        !empty($_POST['attack4']) ||
+        !empty($_POST['attack5']) ||
+        !empty($_POST['attack6']) ||
+        !empty($_POST['attack7'])){
+        $fightFlg = true;
+    } else {
+        $fightFlg = false;
+    }
 
     error_log('$startFlg:'.$startFlg);
     error_log('$gameFlg:'.$gameFlg);
+    error_log('$fightFlg:'.$fightFlg);
+
+    var_dump($startFlg);
+    var_dump($gameFlg);
+    var_dump($fightFlg);
 
     //----------
     //モード管理
     //----------
 
     //テスト用
-    //$startFlg = false;
+    $startFlg = false;
     
     if ($startFlg) {
         $_SESSION['game-now'] = 'fight!!';
         error_log('first step');
         $_SESSION['human'] = $human[mt_rand(1,7)];
 
+        Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
+    } else if($gameFlg) {
         //味方カードの算出
         $mikataCard = CalcCardNum::ArrangeCard(CardNum::MIKATA_CARD_SUM);
         error_log('味方カード：' . print_r($mikataCard,true));
-
-        Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
-    } else if($gameFlg) {
 
         //敵カードの生成
         $tekiCard = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
         error_log('敵カード：' . print_r($tekiCard,true));
 
-        
-
-
-
-        
-
-
-        error_log('game中');
-
-
+//    } elseif($fightFlg) {
+        error_log('戦い中');
+        //勝敗をつける
+        CalcCardNum::judgeCard($tekiCard, $mikataCard);
     } else {
         var_dump('else');
         error_log('else else else');
     }
-//aaabbbcccdddeee
 
     
 
@@ -373,7 +406,7 @@ if(!empty($_POST)) {
 
     error_log('$_SESSIONの値2：'. print_r($_SESSION,true));
     error_log('$_POSTの値2：'. print_r($_POST,true));
-    
+    error_log('$fightFlg:' .$fightFlg );
 }
 
 
@@ -388,7 +421,6 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
 <head>
     <meta charset="utf-8">
     <title>オブジェクト指向OP</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
     <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
     <style>
         body {
@@ -399,6 +431,14 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             height: 40px;
             background-color: black;
         }
+        header input {
+            height: 40px;
+            text-align: center;
+            float: right;
+        }
+        header input:hover{
+            cursor: pointer;
+        }
         ul {
             list-style: none;
             display: inline-block;
@@ -408,7 +448,6 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             text-align: center;
             height: 135px;
         }
-
         li {
             padding-top: 15px;
             padding-bottom: 15px;
@@ -442,6 +481,10 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         }
         .mikata-card {
             text-align: center;
+        }
+        .mikata-card ul:hover{
+            cursor: pointer;
+            border: solid 3px red;
         }
         .story-box {
             border: solid 1px;
@@ -483,7 +526,9 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
 </head>
 <body>
     <header>
-
+        <form action="" method="POST">
+            <input name="reset" value="push-reset">
+        </form>
     </header>
     <?php 
     //さいしょのタイトル画面
@@ -526,7 +571,6 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         <li><?php echo Process::sanitize($val['up']); ?></li>
                         <li><?php echo Process::sanitize($val['middle']); ?></li>
                         <li><?php echo Process::sanitize($val['down']); ?></li>
-                        <li><?php echo $val['place']; ?></li><!-- ここは処理用だから表示されない-->
                     </ul>
                 <?php
                 }
@@ -568,7 +612,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                     var $this = $(this);
                     $.ajax({
                         type: "POST",
-                        url: "ajaxCard.php",
+                        url: "index.php",
                         data: {"attack0" : val0}
                     }).done(function(data) {
                         console.log('success');
@@ -623,13 +667,16 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                 $ul3.on('click', function() {
                     val3 = $ul3.find('li').text();
                     console.log(val3);
+                    var $this = $(this);
                     $.ajax({
                         type: "POST",
                         url: "index.php",
                         data: { "attack3" : val3}
                     }).done(function(data) {
+                        console.log('success');
+                    }).fail(function(msg){
                         console.log('not!!!!');
-                    })
+                    });
                 });
             });
 
@@ -689,11 +736,12 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             $(function(){
                 $ul7 = $('.mikata-ul7');
                 $ul7.on('click', function(){
-                    ul7 = $ul7.find('li').text();
+                    val7 = $ul7.find('li').text();
+                    console.log(val7);
                     $.ajax({
                         type: "POST",
                         url: "index.php",
-                        data: { "attack7" : ul7}
+                        data: { "attack7" : val7}
                     }).done(function(data){
                         console.log('success');
                     }).fail(function(msg){
