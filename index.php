@@ -182,12 +182,12 @@ class Process implements ProcessInterface{
         //セッションがなければ作成する
         if (empty($_SESSION['process'])) $_SESSION['process'] = '';
         //進行欄更新
-        $_SESSION['process'] = $str;
+        $_SESSION['process'] .= $str.'<br>';
     }
     //進行欄クリア
     public static function clr(){
         //進行欄クリア
-        $_SESSION['process'] = '';
+        unset($_SESSION['process']);
     }
     //サニタイズ
     public static function sanitize($str){
@@ -309,10 +309,14 @@ class CalcCardNum implements CardInterface {
         error_log('対戦中　$敵カード' . print_r($teki, true));
         error_log('対戦中　$味方カード' . print_r($mikata[$temp], true));
 
+        Process::set('敵の出したカード：' . $teki[0]['up']);
+        Process::set('あなたの出したカード：' . $mikata[$temp]['up']);
+
         if($teki[0]['up'] < $mikata[$temp]['up']) {
-            error_log('win!!');
+            Process::set('あなたの勝ちです！');
+            return true;
         } else {
-            error_log('lose!!');
+            return false;
         }
 
     }
@@ -335,15 +339,14 @@ $human[] = new FunHuman('酒夫', 'img/yopparai_businessman.png', Attribute::DO,
 //----------
 error_log('$_SESSIONの値1：'. print_r($_SESSION,true));
 error_log('$_POSTの値1：'. print_r($_POST,true));
-//ポスト情報取得
-if(!empty($_POST)) {
 
-    error_log('POSTされた！');
 
     //ゲーム開始したか
     $startFlg = (!empty($_POST['game-start']))? true : false;
     //ゲーム開始後、じぶんのカードを選んだか
     $gameFlg = (!empty($_SESSION['game-now']))? true : false;
+    //途中でゲームをやめたか
+    $resetFlg = (!empty($_POST['reset']))? true : false;
     //戦い中
     if( !empty($_POST['attack0']) ||
         !empty($_POST['attack1']) ||
@@ -358,42 +361,69 @@ if(!empty($_POST)) {
         $fightFlg = false;
     }
 
+//ポスト情報取得
+if(!empty($_POST)) {
+
+    error_log('POSTされた！');
+
+
+
     error_log('$startFlg:'.$startFlg);
     error_log('$gameFlg:'.$gameFlg);
     error_log('$fightFlg:'.$fightFlg);
-
-    var_dump($startFlg);
-    var_dump($gameFlg);
-    var_dump($fightFlg);
-
+/*
+    var_dump('$resetFlg:'.$resetFlg);
+    var_dump('$startFlg:'.$startFlg);
+    var_dump('$gameFlg:'.$gameFlg);
+    var_dump('$fightFlg:'.$fightFlg);
+*/
     //----------
     //モード管理
     //----------
 
     //テスト用
-    $startFlg = false;
+    //$startFlg = false;
     
-    if ($startFlg) {
+    if($resetFlg){
+        $_SESSION = array();
+        $_POST = array();
+        $startFlg = false;
+        $gameFlg = false;
+        $fightFlg = false;
+
+    }elseif($startFlg) {
         $_SESSION['game-now'] = 'fight!!';
         error_log('first step');
         $_SESSION['human'] = $human[mt_rand(1,7)];
 
-        Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
-    } else if($gameFlg) {
         //味方カードの算出
-        $mikataCard = CalcCardNum::ArrangeCard(CardNum::MIKATA_CARD_SUM);
-        error_log('味方カード：' . print_r($mikataCard,true));
+        $_SESSION['mikataCard'] = CalcCardNum::ArrangeCard(CardNum::MIKATA_CARD_SUM);
+        error_log('味方カード：' . print_r($_SESSION['mikataCard'],true));
 
         //敵カードの生成
-        $tekiCard = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
-        error_log('敵カード：' . print_r($tekiCard,true));
-
-//    } elseif($fightFlg) {
+        $_SESSION['tekiCard'] = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
+        error_log('敵カード：' . print_r($_SESSION['tekiCard'], true));
+        
+        Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
+    } elseif($gameFlg) {
+        if($fightFlg) {
+            $_SESSION['game-now'] = '';
+        }
+    } elseif($fightFlg) {
         error_log('戦い中');
         //勝敗をつける
-        CalcCardNum::judgeCard($tekiCard, $mikataCard);
+        $ret = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
+
+        if($ret) {
+
+        } else {
+            $_SESSION = array();
+            $_POST = array();
+            $startFlg = false;
+            $gameFlg = false;
+            $fightFlg = false;
+        }
     } else {
-        var_dump('else');
         error_log('else else else');
     }
 
@@ -406,7 +436,7 @@ if(!empty($_POST)) {
 
     error_log('$_SESSIONの値2：'. print_r($_SESSION,true));
     error_log('$_POSTの値2：'. print_r($_POST,true));
-    error_log('$fightFlg:' .$fightFlg );
+    //error_log('$fightFlg:' .$fightFlg );
 }
 
 
@@ -447,6 +477,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             padding-left: 0;
             text-align: center;
             height: 135px;
+            margin: 0;
         }
         li {
             padding-top: 15px;
@@ -527,7 +558,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
 <body>
     <header>
         <form action="" method="POST">
-            <input name="reset" value="push-reset">
+            <input type="submit" name="reset" value="push-reset">
         </form>
     </header>
     <?php 
@@ -550,7 +581,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         <!--敵カードの表示-->
         <div class="teki-card">
             <?php
-            foreach($tekiCard as $key => $val) {
+            foreach($_SESSION['tekiCard'] as $key => $val) {
             ?>
                 <ul class="teki-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
                     <li><?php echo $val['up']; ?></li>
@@ -565,7 +596,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         <!--味方カードの表示-->
         <div class="mikata-card">
                 <?php 
-                foreach($mikataCard as $key => $val) {
+                foreach($_SESSION['mikataCard'] as $key => $val) {
                 ?>
                     <ul class="mikata-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
                         <li><?php echo Process::sanitize($val['up']); ?></li>
@@ -585,7 +616,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             <figcaption>属性：<?php echo Process::sanitize($_SESSION['human']->getAttribute()); ?></figcaption>
 
             <!--進行の文字列の表示-->
-            <p><?php if(!empty($_SESSION['process'])) {echo Process::sanitize($_SESSION['process']); }; ?></p>
+            <p><?php if(!empty($_SESSION['process'])) {echo $_SESSION['process']; }; ?></p>
         </div>
 
         <!-- script -->
