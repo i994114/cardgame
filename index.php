@@ -13,7 +13,8 @@ session_start(); //セッション使う
 //固定値
 //ランダムでお笑いネタを出す回数
 define('FUNPOINT','3');
-
+//使用済みカード識別用(値はとりあえずありえない枚数に設定)
+define('USED_CARD','99');
 
 //属性定義
 class Attribute {
@@ -80,6 +81,9 @@ abstract class Creature{
                 break;
             case Attribute::HENTAI:
                 $temp = '変';
+                break;
+            default://ここにくることは基本ない
+                $temp = '喜';
                 break;
         }
         return $temp;
@@ -161,47 +165,7 @@ class FunHuman extends Creature {
         Process::set('やったぞぐへへ、、、');
         Process::set($this->name.'はうれしすぎてよだれがでた。。。');
     }
-/*
-    public function CalcExp($targetObj) {
-        error_log('経験値を計算します');
-        switch ($this->attribute) {
-            case Attribute::KI:
-                $point = 10;
-                break;
-            case Attribute::DO:
-                $point = 15;
-                break;
-            case Attribute::AI:
-                $point = 20;
-                break;
-            case Attribute::RAKU:
-                $point = 25;
-            case Attribute::SAKE:
-                $point = 5;
-                break;
-            case Attribute::CUTE:
-                $point = 45;
-                break;
-            case Attribute::WISE:
-                $point = 38;
-                break;
-            case Attribute::HENTAI:
-                $point = 3;
-                break;
-        }
-        //経験値の更新
-        if (!mt_rand(0,3) && $this->funPoint > 0) {
-            //ハイテンションになり経験値アップ
-            Process::set('<br>属性が一致したので'.$targetObj->getName().'はハイテンションだ！');
-            Process::set('経験値が多くもらえるぞ！');
-            $point +=30;
-            $this->funPoint += 1;
-        }
-        $targetObj->setExp($targetObj->getExp() + $point);
-        //経験値獲得のセリフ
-        Process::set('<br>'.$this->getName().'は'.$this->getExp().'の経験値を得た！');
-    }
-*/
+
 }
 
 interface ProcessInterface{
@@ -328,6 +292,7 @@ class CalcCardNum implements CardInterface {
             $temp[$i]['up'] = CalcCardNum::setUpNum();
             $temp[$i]['middle'] = CalcCardNum::setAttribute();
             $temp[$i]['down'] = CalcCardNum::setDownNum();
+            $temp[$i]['num'] = $i;
         }
         return $temp;
     }
@@ -352,7 +317,8 @@ class CalcCardNum implements CardInterface {
 
         //勝敗判定
         //備考：9は1に負けるという特集ルールを採用
-        if($teki[0]['up'] < $mikata[$temp]['up'] ||
+        //if(1){
+        if($teki[0]['up'] <= $mikata[$temp]['up'] ||
            $teki[0]['up'] === 9 && $mikata[$temp]['up'] === 1 ) {
             return true;
         } elseif($teki[0]['up'] === 1 && $mikata[$temp]['up'] === 9){
@@ -398,6 +364,25 @@ if( !empty($_POST['attack0']) ||
     $fightFlg = true;
 } else {
     $fightFlg = false;
+}
+
+//使用済みカードの確認
+if(!empty($_POST['attack0'])){
+    $_SESSION['mikataCard'][0]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack1'])){
+    $_SESSION['mikataCard'][1]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack2'])){
+    $_SESSION['mikataCard'][2]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack3'])){
+    $_SESSION['mikataCard'][3]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack4'])){
+    $_SESSION['mikataCard'][4]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack5'])){
+    $_SESSION['mikataCard'][5]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack6'])){
+    $_SESSION['mikataCard'][6]['num'] = USED_CARD;
+} elseif(!empty($_POST['attack7'])){
+    $_SESSION['mikataCard'][7]['num'] = USED_CARD;
 }
 
 //----------
@@ -457,13 +442,14 @@ if(!empty($_POST)) {
         error_log('戦い中');
         //勝敗をつける
         $retOne = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
+
         error_log('判定結果One：'.$retOne);
 
         if($retOne) {
             //経験値の計算
             $_SESSION['human']->CalcExp($_SESSION['human']);
             
-            if($_SESSION['cntWin'] > CardNum::MIKATA_CARD_SUM){
+            if($_SESSION['cntWin'] >= CardNum::MIKATA_CARD_SUM){
                 //ゲームクリアのセリフ
                 Process::set('<br>'.$_SESSION['human']->getName().'は無事にゲームクリア！！');
                 Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
@@ -663,13 +649,18 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         <div class="mikata-card">
             <?php 
             foreach($_SESSION['mikataCard'] as $key => $val) {
+                //使用済カードでないか（使用済カードなら表示しない）
+                if($val['num'] !== USED_CARD ){
             ?>
-                <ul class="mikata-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
-                    <li><?php echo Process::sanitize($val['up']); ?></li>
-                    <li><?php echo Process::sanitize($val['middle']); ?></li>
-                    <li><?php echo Process::sanitize($val['down']); ?></li>
-                </ul>
-            <?php
+                    <ul class="mikata-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
+                        <li><?php echo Process::sanitize($val['up']); ?></li>
+                        <li><?php echo Process::sanitize($val['middle']); ?></li>
+                        <li><?php echo Process::sanitize($val['down']); ?></li>
+                        <!-- 下記は使用済みカード判定用のため非表示 -->
+                        <li style="display: none;"><?php echo Process::sanitize($val['num']); ?></li>
+                    </ul>
+                <?php
+                }
             }
             ?>
         </div>
@@ -713,7 +704,6 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: {"attack0" : val0}
                     }).done(function(data) {
                         console.log('success');
-                        $this.css('opacity', '0.5');
                         window.location.reload();
                     }).fail(function(msg) {
                         console.log('not!!!!!');
