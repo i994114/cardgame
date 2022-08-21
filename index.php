@@ -41,6 +41,7 @@ abstract class Creature{
     protected $exp;
 
     protected $point;
+    protected $temp;
 
     abstract public function saySerihu();
 
@@ -52,7 +53,33 @@ abstract class Creature{
         return $this->img;
     }
     public function getAttribute() {
-        return $this->attribute;
+        switch($this->attribute) {
+            case Attribute::KI:
+                $temp = '喜';
+                break;
+            case Attribute::DO:
+                $temp = '怒';
+                break;
+            case Attribute::AI:
+                $temp = '哀';
+                break;
+            case Attribute::RAKU:
+                $temp = '楽';
+                break;
+            case Attribute::SAKE:
+                $temp = '酒';
+                break;
+            case Attribute::CUTE:
+                $temp = '美';
+                break;
+            case Attribute::WISE:
+                $temp = '賢';
+                break;
+            case Attribute::HENTAI:
+                $temp = '変';
+                break;
+        }
+        return $temp;
     }
     public function getExp() {
         return $this->exp;
@@ -98,7 +125,7 @@ abstract class Creature{
         error_log('勝った回数' . $_SESSION['cntWin']);
         if($_SESSION['cntWin'] > CardNum::MIKATA_CARD_SUM){
             //ゲームクリアのセリフ
-            Process::set($this->getName().'は無事にゲームクリア！！');
+            Process::set('<br>'.$this->getName().'は無事にゲームクリア！！');
             Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
         } else {
             error_log('ゲーム継続');
@@ -168,12 +195,14 @@ class FunHuman extends Creature {
         //経験値の更新
         if (!mt_rand(0,3) && $this->funPoint > 0) {
             //ハイテンションになり経験値アップ
+            Process::set('<br>属性が一致したので'.$targetObj->getName().'はハイテンションだ！');
+            Process::set('経験値が多くもらえるぞ！');
             $point +=30;
             $this->funPoint += 1;
         }
         $targetObj->setExp($targetObj->getExp() + $point);
         //経験値獲得のセリフ
-        Process::set($this->getName().'は'.$this->getExp().'の経験値を得た！');
+        Process::set('<br>'.$this->getName().'は'.$this->getExp().'の経験値を得た！');
     }
 }
 
@@ -343,10 +372,10 @@ $human[] = new NormalHuman('太郎', 'img/blackman1_smile.png', Attribute::KI, 0
 $human[] = new NormalHuman('泣助', 'img/blackman1_cry.png', Attribute::AI, 0);
 $human[] = new NormalHuman('史郎', 'img/blackman1_laugh.png', Attribute::RAKU, 0);
 $human[] = new NormalHuman('きれい子', 'img/otaku_girl_fashion.png', Attribute::CUTE, 0);
-$human[] = new NormalHuman('出来杉', 'img/apron_man2-1idea.png', Attribute::DO, 0);
-$human[] = new FunHuman('変態野郎', 'img/Shiningcolor.png', Attribute::DO, 0, FUNPOINT);
+$human[] = new NormalHuman('出来杉', 'img/apron_man2-1idea.png', Attribute::WISE, 0);
+$human[] = new FunHuman('変態野郎', 'img/Shiningcolor.png', Attribute::HENTAI, 0, FUNPOINT);
 $human[] = new FunHuman('次郎', 'img/blackman1_angry.png', Attribute::DO, 0, FUNPOINT);
-$human[] = new FunHuman('酒夫', 'img/yopparai_businessman.png', Attribute::DO, 0, FUNPOINT);
+$human[] = new FunHuman('酒夫', 'img/yopparai_businessman.png', Attribute::SAKE, 0, FUNPOINT);
 
 //----------
 //変数定義
@@ -371,6 +400,8 @@ error_log('$_POSTの値1：'. print_r($_POST,true));
         !empty($_POST['attack6']) ||
         !empty($_POST['attack7'])){
         $fightFlg = true;
+        //リロード用：リロードするとtrueになるのでここでfalseにしておく
+        $startFlg = false;
     } else {
         $fightFlg = false;
     }
@@ -403,7 +434,7 @@ if(!empty($_POST)) {
         $startFlg = false;
         $fightFlg = false;
     //ゲームをはじめた直後のとき。カードを選択するまではここにいる
-    }elseif($startFlg) {
+    }elseif($startFlg && !$fightFlg) {
         $_SESSION['game-now'] = 'fight!!';
         error_log('first step');
         $_SESSION['human'] = $human[mt_rand(1,7)];
@@ -419,10 +450,15 @@ if(!empty($_POST)) {
         Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
     //カード選択後
     } elseif($fightFlg) {
+        //これまでの進行メッセージ削除(邪魔なので)
+        Process::clr();
+        //再度ゲーム開始処理をしないようにセッションクリア
+        unset($_SESSION['game-now']);
+
         error_log('戦い中');
         //勝敗をつける
         $ret = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
-
+        
         if($ret) {
             //経験値の計算とゲーム継続可否判定
             $_SESSION['human']->CalcExp($_SESSION['human']);
@@ -520,9 +556,11 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         }
          .teki-card {
             text-align: center;
+            margin-bottom: 10px;
         }
         .mikata-card {
             text-align: center;
+            margin-bottom: 10px;
         }
         .mikata-card ul:hover{
             cursor: pointer;
@@ -551,7 +589,8 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         .story-box p {
             display: inline-block;
             position: relative;
-            top: -150px;
+            top: -180px;
+            left: 10px;
         }
         .start-bottom {
             text-align: center;
@@ -658,6 +697,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: {"attack0" : val0}
                     }).done(function(data) {
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg) {
                         console.log('not!!!!!');
                     });
@@ -677,6 +717,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: {"attack1" : val1}
                     }).done(function(data) {
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg) {
                         console.log('not!!!!!');
                     });
@@ -697,6 +738,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: {"attack2" : val2}
                     }).done(function(data) {
                         console.log('sucess');
+                        window.location.reload();
                     }).fail(function(msg) {
                         console.log('not!!!!');
                     });
@@ -716,6 +758,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: { "attack3" : val3}
                     }).done(function(data) {
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg){
                         console.log('not!!!!');
                     });
@@ -734,6 +777,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: { "attack4" : val4}
                     }).done(function(data) {
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg){
                         console.log('not!!!');
                     });
@@ -752,6 +796,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: { "attack5" : val5}
                     }).done(function(data){
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg){
                         console.log('not!!!!');
                     });
@@ -768,7 +813,8 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         url: "index.php",
                         data: { "attack6" : val6}
                     }).done(function(data){
-                        console.log('success');
+                        console.log('success---');
+                        window.location.reload();
                     }).fail(function(msg){
                         console.log('not!!!!');
                     });
@@ -783,9 +829,10 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                     $.ajax({
                         type: "POST",
                         url: "index.php",
-                        data: { "attack7" : val7}
+                        data: { "attack7" : val7},
                     }).done(function(data){
                         console.log('success');
+                        window.location.reload();
                     }).fail(function(msg){
                         console.log('not!!!!');
                     });
