@@ -462,8 +462,6 @@ if(!empty($_POST)) {
             $startFlg = false;
             $fightFlg = false;
         }
-    } else {
-        error_log('else else else');
     }
 }
 
@@ -596,10 +594,12 @@ $_POST = array();
 </head>
 <body>
     <header>
-        <p>上の数字が大きいほうが勝ち！(下の漢数字での勝負は工事中)</p>
-        <form action="" method="POST">
-            <input type="submit" name="reset" value="Reset">
-        </form>
+        <?php if(!empty($_SESSION)) {?>
+            <p>上の数字が大きいほうが勝ち！(下の漢数字での勝負は工事中)</p>
+            <form action="" method="POST">
+                <input type="submit" name="reset" value="Reset">
+            </form>
+        <?php }?>
     </header>
     <?php 
     //さいしょのタイトル画面
