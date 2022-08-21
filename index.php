@@ -457,6 +457,7 @@ if(!empty($_POST)) {
                 error_log('ゲーム継続');
                 //敵カードシャッフル
                 $_SESSION['tekiCard'] = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
+                Process::set('<br>じぶんの好きなカードをえらんでください。');
             }
         } else {
             error_log('負け');
@@ -469,26 +470,13 @@ if(!empty($_POST)) {
         error_log('else else else');
     }
 
-    
-
-
-
-
-    //$_SESSION = array();
-
-    error_log('$_SESSIONの値2：'. print_r($_SESSION,true));
-    error_log('$_POSTの値2：'. print_r($_POST,true));
-    //error_log('$fightFlg:' .$fightFlg );
+   // error_log('$_SESSIONの値2：'. print_r($_SESSION,true));
+    //error_log('$_POSTの値2：'. print_r($_POST,true));
 }
 
-
-
 $_POST = array();
-error_log('$_POSTの値3：'. print_r($_POST,true));
 
 ?>
-
-
 
 <head>
     <meta charset="utf-8">
@@ -504,12 +492,18 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             background-color: black;
         }
         header input {
-            height: 40px;
             text-align: center;
             float: right;
+            font-size: 20px;
+            padding: 30px;
         }
         header input:hover{
             cursor: pointer;
+        }
+        header p {
+            text-align: center;
+            color: white;
+            line-height: 40px;
         }
         ul {
             list-style: none;
@@ -551,7 +545,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         }
          .teki-card {
             text-align: center;
-            margin-bottom: 10px;
+            margin: 10px 0;
         }
         .mikata-card {
             text-align: center;
@@ -609,8 +603,9 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
 </head>
 <body>
     <header>
+        <p>上の数字が大きいほうが勝ち！(下の漢数字での勝負は工事中)</p>
         <form action="" method="POST">
-            <input type="submit" name="reset" value="push-reset">
+            <input type="submit" name="reset" value="Reset">
         </form>
     </header>
     <?php 
@@ -622,6 +617,13 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         <div class="start-bottom">
             <form method="post">
                 <label>経験値獲得ゲーム！！<br></label>
+                <p>
+                    <span style="font-size: 50px;">ルール<br></span>
+                    ・さいしょにカードが8枚配布されます。<br>
+                    ・相手のカードより大きい数字を出すと経験値が貯まります。<br>
+                    ・すべてのカードを使い切ったら勝ちです。<br>
+                    ・キャラにより、溜まる経験値が異なります。<br>
+                </p>
                 <input type="submit" name="game-start" value="GAME START!!">
             </form>
         </div>
