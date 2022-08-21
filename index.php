@@ -378,33 +378,35 @@ $human[] = new FunHuman('次郎', 'img/blackman1_angry.png', Attribute::DO, 0, F
 $human[] = new FunHuman('酒夫', 'img/yopparai_businessman.png', Attribute::SAKE, 0, FUNPOINT);
 
 //----------
-//変数定義
+//事前処理
 //----------
 error_log('$_SESSIONの値1：'. print_r($_SESSION,true));
 error_log('$_POSTの値1：'. print_r($_POST,true));
 
+//ゲーム開始したか
+$startFlg = (!empty($_POST['game-start']) && empty($_SESSION['human']))? true : false;
+//途中でゲームをやめたか
+$resetFlg = (!empty($_POST['reset']))? true : false;
 
-    //ゲーム開始したか
-    $startFlg = (!empty($_POST['game-start']))? true : false;
-   
-    //途中でゲームをやめたか
-    $resetFlg = (!empty($_POST['reset']))? true : false;
+//ゲーム開始後、じぶんのカードを選んだか
+if( !empty($_POST['attack0']) ||
+    !empty($_POST['attack1']) ||
+    !empty($_POST['attack2']) ||
+    !empty($_POST['attack3']) ||
+    !empty($_POST['attack4']) ||
+    !empty($_POST['attack5']) ||
+    !empty($_POST['attack6']) ||
+    !empty($_POST['attack7'])){
+    $fightFlg = true;
+    //リロード用：リロードするとtrueになるのでここでfalseにしておく
+    $startFlg = false;
+} else {
+    $fightFlg = false;
+}
 
-    //ゲーム開始後、じぶんのカードを選んだか
-    if( !empty($_POST['attack0']) ||
-        !empty($_POST['attack1']) ||
-        !empty($_POST['attack2']) ||
-        !empty($_POST['attack3']) ||
-        !empty($_POST['attack4']) ||
-        !empty($_POST['attack5']) ||
-        !empty($_POST['attack6']) ||
-        !empty($_POST['attack7'])){
-        $fightFlg = true;
-        //リロード用：リロードするとtrueになるのでここでfalseにしておく
-        $startFlg = false;
-    } else {
-        $fightFlg = false;
-    }
+//----------
+//メイン処理
+//----------
 
 //ポスト情報取得
 if(!empty($_POST)) {
@@ -447,8 +449,10 @@ if(!empty($_POST)) {
         $_SESSION['tekiCard'] = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
         error_log('敵カード：' . print_r($_SESSION['tekiCard'], true));
         
-        Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
-    //カード選択後
+        Process::set('ゲームをはじめます。');
+        Process::set('じぶんの好きなカードをえらんでください。');
+
+        //カード選択後
     } elseif($fightFlg) {
         //これまでの進行メッセージ削除(邪魔なので)
         Process::clr();
@@ -560,7 +564,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
         }
         .mikata-card {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 30px;
         }
         .mikata-card ul:hover{
             cursor: pointer;
@@ -577,13 +581,13 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             height: 120px;
             width: 120px;
             position: relative;
-            right: 280px;
+            right: 180px;
             top: 10px;
         }
         .story-box figcaption{
             margin-top: 5px;
             position: relative;
-            right: 280px;
+            right: 150px;
             top: 10px
         }
         .story-box p {
