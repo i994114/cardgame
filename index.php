@@ -52,7 +52,10 @@ abstract class Creature{
     public function getImg() {
         return $this->img;
     }
-    public function getAttribute() {
+    public function getAttribute(){
+        return $this->attribute;
+    }
+    public function getAttributeChar() {
         switch($this->attribute) {
             case Attribute::KI:
                 $temp = '喜';
@@ -123,13 +126,6 @@ abstract class Creature{
         //使った回数のカウント
         $_SESSION['cntWin'] += 1;
         error_log('勝った回数' . $_SESSION['cntWin']);
-        if($_SESSION['cntWin'] > CardNum::MIKATA_CARD_SUM){
-            //ゲームクリアのセリフ
-            Process::set('<br>'.$this->getName().'は無事にゲームクリア！！');
-            Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
-        } else {
-            error_log('ゲーム継続');
-        }
     }
 }
 
@@ -165,8 +161,9 @@ class FunHuman extends Creature {
         Process::set('やったぞぐへへ、、、');
         Process::set($this->name.'はうれしすぎてよだれがでた。。。');
     }
-
+/*
     public function CalcExp($targetObj) {
+        error_log('経験値を計算します');
         switch ($this->attribute) {
             case Attribute::KI:
                 $point = 10;
@@ -204,6 +201,7 @@ class FunHuman extends Creature {
         //経験値獲得のセリフ
         Process::set('<br>'.$this->getName().'は'.$this->getExp().'の経験値を得た！');
     }
+*/
 }
 
 interface ProcessInterface{
@@ -335,6 +333,7 @@ class CalcCardNum implements CardInterface {
     }
     //ひとつひとつの勝負の勝敗をつける
     public static function judgeCard($teki, $mikata){
+        error_log('ひとつひとつの勝負の勝敗を判定します');
         //どのカードが選択されたかを判定
         for ($i=0; $i<CardNum::MIKATA_CARD_SUM; $i++){
             if(!empty($_POST['attack'.$i])){
@@ -345,8 +344,8 @@ class CalcCardNum implements CardInterface {
             }
         }
 
-        error_log('対戦中　$敵カード' . print_r($teki, true));
-        error_log('対戦中　$味方カード' . print_r($mikata[$temp], true));
+        //error_log('対戦中　$敵カード' . print_r($teki, true));
+        //error_log('対戦中　$味方カード' . print_r($mikata[$temp], true));
 
         Process::set('敵の出したカード：' . $teki[0]['up']);
         Process::set('あなたの出したカード：' . $mikata[$temp]['up']);
@@ -361,7 +360,6 @@ class CalcCardNum implements CardInterface {
         } else {
             return false;
         }
-
     }
 }
 
@@ -398,8 +396,6 @@ if( !empty($_POST['attack0']) ||
     !empty($_POST['attack6']) ||
     !empty($_POST['attack7'])){
     $fightFlg = true;
-    //リロード用：リロードするとtrueになるのでここでfalseにしておく
-    $startFlg = false;
 } else {
     $fightFlg = false;
 }
@@ -426,9 +422,6 @@ if(!empty($_POST)) {
     //モード管理
     //----------
 
-    //テスト用
-    //$startFlg = false;
-    
     //途中でゲームをやめたとき
     if($resetFlg){
         $_SESSION = array();
@@ -438,6 +431,8 @@ if(!empty($_POST)) {
     //ゲームをはじめた直後のとき。カードを選択するまではここにいる
     }elseif($startFlg && !$fightFlg) {
         $_SESSION['game-now'] = 'fight!!';
+        $_SESSION['cntWin'] = 0;
+        
         error_log('first step');
         $_SESSION['human'] = $human[mt_rand(1,7)];
 
@@ -461,12 +456,22 @@ if(!empty($_POST)) {
 
         error_log('戦い中');
         //勝敗をつける
-        $ret = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
-        
-        if($ret) {
-            //経験値の計算とゲーム継続可否判定
-            $_SESSION['human']->CalcExp($_SESSION['human']);
+        $retOne = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
+        error_log('判定結果One：'.$retOne);
 
+        if($retOne) {
+            //経験値の計算
+            $_SESSION['human']->CalcExp($_SESSION['human']);
+            
+            if($_SESSION['cntWin'] > CardNum::MIKATA_CARD_SUM){
+                //ゲームクリアのセリフ
+                Process::set('<br>'.$_SESSION['human']->getName().'は無事にゲームクリア！！');
+                Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
+            } else {
+                error_log('ゲーム継続');
+                //敵カードシャッフル
+                $_SESSION['tekiCard'] = CalcCardNum::ArrangeCard(CardNum::TEKI_CARD_SUM);
+            }
         } else {
             error_log('負け');
             $_SESSION = array();
@@ -570,6 +575,13 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             cursor: pointer;
             border: solid 3px red;
         }
+        .done-cord{
+            background-color: black;
+            color: white;
+            height: 135px;
+            width: 80px;
+            display: inline-block;
+        }
         .story-box {
             border: solid 1px;
             position: absolute;
@@ -649,17 +661,17 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
 
         <!--味方カードの表示-->
         <div class="mikata-card">
-                <?php 
-                foreach($_SESSION['mikataCard'] as $key => $val) {
-                ?>
-                    <ul class="mikata-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
-                        <li><?php echo Process::sanitize($val['up']); ?></li>
-                        <li><?php echo Process::sanitize($val['middle']); ?></li>
-                        <li><?php echo Process::sanitize($val['down']); ?></li>
-                    </ul>
-                <?php
-                }
-                ?>
+            <?php 
+            foreach($_SESSION['mikataCard'] as $key => $val) {
+            ?>
+                <ul class="mikata-ul<?php echo $key; ?>" data-num = <?php echo $val['up'];?>>
+                    <li><?php echo Process::sanitize($val['up']); ?></li>
+                    <li><?php echo Process::sanitize($val['middle']); ?></li>
+                    <li><?php echo Process::sanitize($val['down']); ?></li>
+                </ul>
+            <?php
+            }
+            ?>
         </div>
 
         <!--進行ウィンドウの表示-->
@@ -667,7 +679,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
             <!--味方画像の表示-->
             <img src="<?php echo Process::sanitize($_SESSION['human']->getImg()); ?>"alt="">
             <figcaption><?php echo Process::sanitize($_SESSION['human']->getName()); ?></figcaption>
-            <figcaption>属性：<?php echo Process::sanitize($_SESSION['human']->getAttribute()); ?></figcaption>
+            <figcaption>属性：<?php echo Process::sanitize($_SESSION['human']->getAttributeChar()); ?></figcaption>
 
             <!--進行の文字列の表示-->
             <p><?php if(!empty($_SESSION['process'])) {echo $_SESSION['process']; }; ?></p>
@@ -701,6 +713,7 @@ error_log('$_POSTの値3：'. print_r($_POST,true));
                         data: {"attack0" : val0}
                     }).done(function(data) {
                         console.log('success');
+                        $this.css('opacity', '0.5');
                         window.location.reload();
                     }).fail(function(msg) {
                         console.log('not!!!!!');
