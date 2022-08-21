@@ -125,6 +125,7 @@ abstract class Creature{
         }
         //経験値の更新
         $targetObj->setExp($targetObj->getExp() + $point);
+
         //経験値獲得のセリフ
         Process::set($this->getName().'は、'.$this->getExp().'の経験値を得た！');
         //使った回数のカウント
@@ -157,7 +158,7 @@ class FunHuman extends Creature {
         $this->img = $img;
         $this->attribute = $attribute;
         $this->exp = $exp;
-        $this->funPoint = $funPoint;
+        $this->funPoint = $funPoint;//未使用。ランダムにお笑いネタを出すときにつかう
     }
 
     public function saySerihu()
@@ -206,9 +207,6 @@ interface CardInterface {
 }
 
 class CalcCardNum implements CardInterface {
-
-    
-
     //カード内上の値の算出
     public static function setUpNum()
     {
@@ -317,7 +315,7 @@ class CalcCardNum implements CardInterface {
 
         //勝敗判定
         //備考：9は1に負けるという特集ルールを採用
-        //if(1){
+ //       if(1){
         if($teki[0]['up'] <= $mikata[$temp]['up'] ||
            $teki[0]['up'] === 9 && $mikata[$temp]['up'] === 1 ) {
             return true;
@@ -393,12 +391,9 @@ if(!empty($_POST['attack0'])){
 if(!empty($_POST)) {
 
     error_log('POSTされた！');
-
-
-
+/*
     error_log('$startFlg:'.$startFlg);
     error_log('$fightFlg:'.$fightFlg);
-/*
     var_dump('$resetFlg:'.$resetFlg);
     var_dump('$startFlg:'.$startFlg);
     var_dump('$fightFlg:'.$fightFlg);
@@ -452,7 +447,8 @@ if(!empty($_POST)) {
             if($_SESSION['cntWin'] >= CardNum::MIKATA_CARD_SUM){
                 //ゲームクリアのセリフ
                 Process::set('<br>'.$_SESSION['human']->getName().'は無事にゲームクリア！！');
-                Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
+                $_SESSION['human']->saySerihu();
+                Process::set('<br>続けてゲームをおこなう場合は右上のリセットボタンを押してください');
             } else {
                 error_log('ゲーム継続');
                 //敵カードシャッフル
@@ -469,9 +465,6 @@ if(!empty($_POST)) {
     } else {
         error_log('else else else');
     }
-
-   // error_log('$_SESSIONの値2：'. print_r($_SESSION,true));
-    //error_log('$_POSTの値2：'. print_r($_POST,true));
 }
 
 $_POST = array();
@@ -565,7 +558,7 @@ $_POST = array();
         .story-box {
             border: solid 1px;
             position: absolute;
-            height: 200px;
+            height: 250px;
             width: 30%;
             left: 590px;
         }
@@ -580,7 +573,7 @@ $_POST = array();
             margin-top: 5px;
             position: relative;
             right: 150px;
-            top: 10px
+            top: 10px;
         }
         .story-box p {
             display: inline-block;
