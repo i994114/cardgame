@@ -64,7 +64,7 @@ abstract class Creature{
     }
 
     public function CalcExp($targetObj) {
-        switch ($this->attribute) {
+        switch ($this->getAttribute()) {
             case Attribute::KI:
                 $point = 10;
                 break;
@@ -92,7 +92,17 @@ abstract class Creature{
         //経験値の更新
         $targetObj->setExp($targetObj->getExp() + $point);
         //経験値獲得のセリフ
-        Process::set($this->getName().'は'.$this->getExp().'の経験値を得た！');
+        Process::set($this->getName().'は、'.$this->getExp().'の経験値を得た！');
+        //使った回数のカウント
+        $_SESSION['cntWin'] += 1;
+        error_log('勝った回数' . $_SESSION['cntWin']);
+        if($_SESSION['cntWin'] > CardNum::MIKATA_CARD_SUM){
+            //ゲームクリアのセリフ
+            Process::set($this->getName().'は無事にゲームクリア！！');
+            Process::set('続けてゲームをおこなう場合は右上のリセットボタンを押してください');
+        } else {
+            error_log('ゲーム継続');
+        }
     }
 }
 
@@ -312,9 +322,13 @@ class CalcCardNum implements CardInterface {
         Process::set('敵の出したカード：' . $teki[0]['up']);
         Process::set('あなたの出したカード：' . $mikata[$temp]['up']);
 
-        if($teki[0]['up'] < $mikata[$temp]['up']) {
-            Process::set('あなたの勝ちです！');
+        //勝敗判定
+        //備考：9は1に負けるという特集ルールを採用
+        if($teki[0]['up'] < $mikata[$temp]['up'] ||
+           $teki[0]['up'] === 9 && $mikata[$temp]['up'] === 1 ) {
             return true;
+        } elseif($teki[0]['up'] === 1 && $mikata[$temp]['up'] === 9){
+            return false;
         } else {
             return false;
         }
@@ -343,11 +357,11 @@ error_log('$_POSTの値1：'. print_r($_POST,true));
 
     //ゲーム開始したか
     $startFlg = (!empty($_POST['game-start']))? true : false;
-    //ゲーム開始後、じぶんのカードを選んだか
-    $gameFlg = (!empty($_SESSION['game-now']))? true : false;
+   
     //途中でゲームをやめたか
     $resetFlg = (!empty($_POST['reset']))? true : false;
-    //戦い中
+
+    //ゲーム開始後、じぶんのカードを選んだか
     if( !empty($_POST['attack0']) ||
         !empty($_POST['attack1']) ||
         !empty($_POST['attack2']) ||
@@ -369,12 +383,10 @@ if(!empty($_POST)) {
 
 
     error_log('$startFlg:'.$startFlg);
-    error_log('$gameFlg:'.$gameFlg);
     error_log('$fightFlg:'.$fightFlg);
 /*
     var_dump('$resetFlg:'.$resetFlg);
     var_dump('$startFlg:'.$startFlg);
-    var_dump('$gameFlg:'.$gameFlg);
     var_dump('$fightFlg:'.$fightFlg);
 */
     //----------
@@ -384,13 +396,13 @@ if(!empty($_POST)) {
     //テスト用
     //$startFlg = false;
     
+    //途中でゲームをやめたとき
     if($resetFlg){
         $_SESSION = array();
         $_POST = array();
         $startFlg = false;
-        $gameFlg = false;
         $fightFlg = false;
-
+    //ゲームをはじめた直後のとき。カードを選択するまではここにいる
     }elseif($startFlg) {
         $_SESSION['game-now'] = 'fight!!';
         error_log('first step');
@@ -405,22 +417,21 @@ if(!empty($_POST)) {
         error_log('敵カード：' . print_r($_SESSION['tekiCard'], true));
         
         Process::set('ゲームをはじめます。じぶんの好きなカードをえらんでください。');
-    } elseif($gameFlg) {
-        if($fightFlg) {
-            $_SESSION['game-now'] = '';
-        }
+    //カード選択後
     } elseif($fightFlg) {
         error_log('戦い中');
         //勝敗をつける
         $ret = CalcCardNum::judgeCard($_SESSION['tekiCard'], $_SESSION['mikataCard']);
 
         if($ret) {
+            //経験値の計算とゲーム継続可否判定
+            $_SESSION['human']->CalcExp($_SESSION['human']);
 
         } else {
+            error_log('負け');
             $_SESSION = array();
             $_POST = array();
             $startFlg = false;
-            $gameFlg = false;
             $fightFlg = false;
         }
     } else {
